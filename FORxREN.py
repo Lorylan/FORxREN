@@ -3,10 +3,7 @@ import numpy as np
 import copy
 import tensorflow as tf
 from keras.utils import np_utils
-import pprint
 import pandas as pd
-
-
 
 
 class FORxREN():
@@ -17,7 +14,7 @@ class FORxREN():
     Subclasses of this class must implement the build_model and process_data method.
 
     """
-
+    
     def __init__(self):
         """
         Contructs all the necesary attibutes for the Rule Extractor object
@@ -33,11 +30,6 @@ class FORxREN():
 
         """
         
-
-    @property
-    def data(self):
-        return self.__data
-
     @property
     def X(self):
         return self.__X
@@ -75,12 +67,7 @@ class FORxREN():
         return self.__network_y
 
 
-
     #####################################################################################
-
-    @data.setter
-    def data(self,data):
-        self.__data = data
 
     @X.setter
     def X(self,X):
@@ -117,8 +104,6 @@ class FORxREN():
     @network_y.setter
     def network_y(self, network_y):
         self.__network_y = network_y
-
-
 
     #####################################################################################
 
@@ -528,7 +513,6 @@ class FORxREN():
 
         input_dim = self.input_dim
         
-
         total = len(y_test)
         correct_class = 0
         wrong_class = []
@@ -659,21 +643,19 @@ class FORxREN():
         self.network_y = self.__network_output()
         self.error_examples = self.__missclassified_counter()
 
-        if(self.mode in [1,2,3]):
+        if(execution_mode in [1,2,3]):
             self.null_neurons = self.__neuron_filter()
         else:
             self.null_neurons = []
 
         self.rule_mat = self.__build_matrix()
 
-        if(self.mode in [1,2]):
+        if(execution_mode in [1,2]):
             self.rule_mat = self.__rule_pruning()
 
-        if(self.mode == 1):
+        if(execution_mode == 1):
             self.rule_mat = self.__rule_updation()
             
-        
-
 
         #print("-----Accuracy-----")
         #self.__classify(self.rule_mat, self.rule_order, self.X, self.Y,True)[1]
