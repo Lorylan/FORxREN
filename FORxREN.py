@@ -1,10 +1,8 @@
-
 import numpy as np
 import copy
 import tensorflow as tf
 from keras.utils import np_utils
 import pandas as pd
-
 
 class FORxREN():
     """
@@ -14,7 +12,7 @@ class FORxREN():
     Subclasses of this class must implement the build_model and process_data method.
 
     """
-    
+
     def __init__(self):
         """
         Contructs all the necesary attibutes for the Rule Extractor object
@@ -29,84 +27,21 @@ class FORxREN():
             mode (int) : COMPLETAR
 
         """
-        
-    @property
-    def X(self):
-        return self.__X
-
-    @property
-    def Y(self):
-        return self.__Y
-
-    @property
-    def model(self):
-        return self.__model
-
-    @property
-    def error_examples(self):
-        return self.__error_examples
-
-    @property
-    def acc_origin(self):
-        return self.__acc_origin
-
-    @property
-    def null_neurons(self):
-        return self.__null_neurons
-
-    @property
-    def rule_mat(self):
-        return self.__rule_mat
-
-    @property
-    def rule_order(self):
-        return self.__rule_order
-
-    @property
-    def network_y(self):
-        return self.__network_y
-
-
-    #####################################################################################
-
-    @X.setter
-    def X(self,X):
-        self.__X= X
-
-    @Y.setter
-    def Y(self,Y):
-        self.__Y= Y
-
-    @model.setter
-    def model(self,model):
-        self.__model= model
-
-    @error_examples.setter
-    def error_examples(self,error_examples):
-        self.__error_examples= error_examples
-
-    @acc_origin.setter
-    def acc_origin(self,acc_origin):
-        self.__acc_origin= acc_origin
-
-    @null_neurons.setter
-    def null_neurons(self,null_neurons):
-        self.__null_neurons= null_neurons
-
-    @rule_mat.setter
-    def rule_mat(self,rule_mat):
-        self.__rule_mat= rule_mat
-
-    @rule_order.setter
-    def rule_order(self, rule_order):
-        self.__rule_order= rule_order
-
-    @network_y.setter
-    def network_y(self, network_y):
-        self.__network_y = network_y
-
-    #####################################################################################
-
+        self._X = None
+        self._Y = None 
+        self._model = None
+        self._error_examples = None
+        self._acc_origin = None
+        self._null_neurons = None
+        self._rule_mat = None
+        self._rule_order = None
+        self._network_y = None
+        self._input_dim = None
+        self._first_layer_size = None
+        self._classes = None
+        self._per_test = None
+        self._max_fidelity_loss = None
+    
     def __network_output(self):
         """
         Classificates every element in the dataset and returns a list with the output class from the network for each element in the dataset.
@@ -114,13 +49,14 @@ class FORxREN():
         Returns:
             new_y : List of integers from the network output, where each number represents the class assigned to an element from the dataset
         """
-        data = self.X
-        x_pred = self.model.predict(data, verbose=0)
+        data = self._X
+        x_pred = self._model.predict(data, verbose=0)
 
-        return [np.argmax(x_pred[elem]) for elem in range(len(data)) ]
+        return [np.argmax(x_pred[elem]) for elem in range(len(data))]
 
-    def calculate_train(self, data):
-        """
+    """def __calculate_train(self, data):
+        
+        TODO: Ver que hacer con los porcentajes de entrenamiento
         Splits the input data into training and validation sets based on the percentage of data to use for training.
 
         Args:
@@ -128,15 +64,16 @@ class FORxREN():
 
         Returns:
             train_data: A list or array of the training data.
-        """
+        
         per_train = self.per_train
 
         end_idx = int(len(data)*per_train)
         train_data =  data[:end_idx]
-        return train_data
+        return train_data"""
 
-    def calculate_test(self, data):
+    def __calculate_test(self, data):
         """
+        TODO: Ver que hacer con los porcentajes de entrenamiento
         Splits the input data into training and validation sets based on the percentage of data to use for testing.
 
         Args:
@@ -145,13 +82,14 @@ class FORxREN():
         Returns:
             test_data: A list or array of the testing data.
         """
-        per_test = self.per_test
+        per_test = self._per_test
 
         start_idx = int(len(data) - len(data)*per_test)
         test_data = data[start_idx:]
+        
         return test_data
 
-    def model_accuracy(self, use_y_from_network):
+    def __model_accuracy(self, use_y_from_network):
         """
         Calculates the accuracy of the model on the test data.
 
@@ -161,16 +99,15 @@ class FORxREN():
         Returns:
             test_accuracy: A float indicating the accuracy of the model on the test data.
         """
-        model = self.model
-        X_test = self.calculate_test(self.X)
+        X_test = self.__calculate_test(self._X)
 
         if use_y_from_network:
-            Y_test = self.calculate_test(self.network_y)
+            Y_test = self.__calculate_test(self._network_y)
         else:
-            Y_test = self.calculate_test(self.Y)
+            Y_test = self.__calculate_test(self._Y)
 
-        Y_test=np_utils.to_categorical(Y_test, num_classes=self.classes)
-        result = model.evaluate(X_test,Y_test, verbose=0)
+        Y_test=np_utils.to_categorical(Y_test, num_classes=self._classes)
+        result = self._model.evaluate(X_test,Y_test, verbose=0)
         #print(("Network test: {} - Network accuracy: {}").format(result[0],result[1]))
         return result[1]
 
@@ -181,11 +118,11 @@ class FORxREN():
         Returns:
             e: A list of lists of integers. Each sublist contains the indices of the misclassified elements for a particular input.
         """
-        model= self.model
-        input_dim = self.input_dim
-        first_layer_size =self.first_layer_size
-        X = self.X
-        Y = self.network_y
+        model= self._model
+        input_dim = self._input_dim
+        first_layer_size =self._first_layer_size
+        X = self._X
+        Y = self._network_y
 
         e=[]
 
@@ -225,7 +162,7 @@ class FORxREN():
         Returns:
             min: An integer representing the minimum number of misclassified elements for the inputs not in the 'erased' list.
         """
-        e = self.error_examples
+        e = self._error_examples
 
         min = len(self.X) + 1
         for i in range(len(e)):
@@ -244,16 +181,17 @@ class FORxREN():
         Returns:
             erased (list): A list with the indices of the removed neurons
         """
-        e = self.error_examples
-        first_layer_size = self.first_layer_size
-        input_dim = self.input_dim
-        acc_origin = self.acc_origin
-        model = self.model
+        e = self._error_examples
+        first_layer_size = self._first_layer_size
+        input_dim = self._input_dim
+        acc_origin = self._acc_origin
+        model = self._model
 
         layer1 = model.get_layer("layer1")
         weights = layer1.get_weights()
         fidelity = 1
-        min_fidelity = fidelity-0.05
+        min_fidelity = fidelity-self._max_fidelity_loss
+        "TODO: Cambiar por min fidelity (variable) "
         new_weights = copy.deepcopy(weights)
         next = True
         another_erased = False
@@ -271,7 +209,7 @@ class FORxREN():
 
             for x in range(input_dim):
                 if(len(e[x]) <= threshold and x not in erased):
-                    print("Add neuron {} to B".format(x))
+                    #print("Add neuron {} to B".format(x))
                     B.append(x)
                     another_erased = True
 
@@ -285,7 +223,7 @@ class FORxREN():
 
                 # We find out the accuracy
                 #print(" Partial fidelity ")
-                fid_aux = self.model_accuracy(True)
+                fid_aux = self.__model_accuracy(True)
 
                 if((fid_aux >= min_fidelity and not(len(erased) >= input_dim - 1 ))):
                     fidelity = fid_aux
@@ -309,12 +247,12 @@ class FORxREN():
         Returns:
             rule_mat : A matrix of rules with dimensions (input_dim, classes).
         """
-        input_dim = self.input_dim
-        classes = self.classes
-        B = self.null_neurons
-        e = self.error_examples
-        Y = self.Y
-        X = self.X
+        input_dim = self._input_dim
+        classes = self._classes
+        B = self._null_neurons
+        e = self._error_examples
+        Y = self._Y
+        X = self._X
 
         alpha = 0.25
         class_groups = []
@@ -346,10 +284,10 @@ class FORxREN():
         #pprint.pprint(rule_mat)
         #print("#################################")
         #print("-----First Rules-----")
-        self.write_rules(rule_mat, True)
+        self.__write_rules(rule_mat, True)
         return rule_mat
 
-    def write_rules(self, mat, write):
+    def __write_rules(self, mat, write):
         """
         Writes the generated rules from a matrix to a rule list,
         and sorts the rules in decreasing order of complexity.
@@ -358,8 +296,8 @@ class FORxREN():
             mat (numpy.ndarray): The matrix containing the rules.
             write (boolean ): A boolean value that indicates whether the rules should be printed to the console or not.
         """
-        classes = self.classes
-        input_dim = self.input_dim
+        classes = self._classes
+        input_dim = self._input_dim
         rules = []
         r_order = []
 
@@ -417,7 +355,7 @@ class FORxREN():
                 print(rule)
         #if(write):
             #print("###########################################")
-        self.rule_order = r_order
+        self._rule_order = r_order
 
     def __rule_prune(self, rule_idx, input_idx, sub_idx):
         """
@@ -432,9 +370,9 @@ class FORxREN():
         Returns:
             float: The accuracy of the classification result after pruning the specified rule from the rule matrix.
         """
-        rule_mat = self.rule_mat
-        Y_test = self.network_y
-        X_test = self.X
+        rule_mat = self._rule_mat
+        Y_test = self._network_y
+        X_test = self._X
 
         aux_mat = copy.deepcopy(rule_mat)
 
@@ -446,8 +384,8 @@ class FORxREN():
             aux_mat[input_idx][rule_idx] = new_value
         else:
             aux_mat[input_idx][rule_idx] = None
-        self.write_rules(aux_mat, False)
-        return self.__classify(aux_mat, self.rule_order, X_test, Y_test,False)[1]
+        self.__write_rules(aux_mat, False)
+        return self.__classify(aux_mat, self._rule_order, X_test, Y_test,False)[1]
 
     def __rule_pruning(self):
         """
@@ -458,22 +396,22 @@ class FORxREN():
         Returns:
             rule_mat : The updated rule matrix after pruning.
         """
-        rule_mat = self.rule_mat
-        rule_order = self.rule_order
+        rule_mat = self._rule_mat
+        rule_order = self._rule_order
         
-        Y_test = self.network_y
-        X_test = self.X
+        Y_test = self._network_y
+        X_test = self._X
 
-        prune_matrix = [0 for x in range(self.classes)]
+        prune_matrix = [0 for x in range(self._classes)]
 
-        for j in range(self.classes):
-            for i in range(self.input_dim):
+        for j in range(self._classes):
+            for i in range(self._input_dim):
                 if(rule_mat[i][j] != None):
                     prune_matrix[j] += 1
 
         r_fid = self.__classify(rule_mat, rule_order, X_test, Y_test,False)[1]
         for j in range(len(rule_order)):
-            for i in range(self.input_dim):
+            for i in range(self._input_dim):
                 if(prune_matrix[j] > 1):
                     if(rule_mat[i][rule_order[j]] != None):
                         new_fid = self.__rule_prune(rule_order[j], i, -1)
@@ -494,7 +432,7 @@ class FORxREN():
                                 prune_matrix[j] -= 0.5
 
         #print("-----Pruned Rules-----")
-        self.write_rules(rule_mat, True)
+        self.__write_rules(rule_mat, True)
         return rule_mat
 
     def __classify(self,mat, rule_order, x_test, y_test, should_print):
@@ -511,7 +449,7 @@ class FORxREN():
             tuple: A tuple containing the indices of the misclassified samples and the classification accuracy.
         """
 
-        input_dim = self.input_dim
+        input_dim = self._input_dim
         
         total = len(y_test)
         correct_class = 0
@@ -547,15 +485,16 @@ class FORxREN():
         Returns:
              tuple: The updated rule matrix.
         """
-        classes = self.classes
-        input_dim = self.input_dim
-        rule_mat = self.rule_mat
-        rule_order = self.rule_order
+
+        classes = self._classes
+        input_dim = self._input_dim
+        rule_mat = self._rule_mat
+        rule_order = self._rule_order
+        Y_test = self._network_y
+        X_test = self._X
 
         missclassified = []
 
-        Y_test = self.network_y
-        X_test = self.X
         data = self.__classify(rule_mat, rule_order, X_test, Y_test,False)
         pruned_fidelity = data[1]
 
@@ -606,7 +545,7 @@ class FORxREN():
         #self.write_rules(rule_mat, True)
         return rule_mat
 
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode):
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss):
         """
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
@@ -626,35 +565,33 @@ class FORxREN():
             classes (int): Amount of clasification classes in the dataset
             execution_mode (int) : COMPLETAR
         """
-        
-        #+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++
-        
-        self.model = keras_model
-        self.X = X
-        self.Y = Y
-        self.input_dim = input_dim
-        self.first_layer_size = first_layer_size
-        self.mode = execution_mode
-        self.classes = pd.unique(Y)
-        
-        #+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++#+#++
 
-        self.acc_origin = self.model_accuracy(False)
-        self.network_y = self.__network_output()
-        self.error_examples = self.__missclassified_counter()
+        self._model = keras_model
+        self._X = X
+        self._Y = Y
+        self._input_dim = input_dim
+        self._first_layer_size = first_layer_size
+        self._mode = execution_mode
+        self._per_test = percentage_test
+        self._max_fidelity_loss = max_fidelity_loss
+        self._classes = pd.unique(Y)
+
+        self._acc_origin = self.__model_accuracy(False)
+        self._network_y = self.__network_output()
+        self._error_examples = self.__missclassified_counter()
 
         if(execution_mode in [1,2,3]):
-            self.null_neurons = self.__neuron_filter()
+            self._null_neurons = self.__neuron_filter()
         else:
-            self.null_neurons = []
+            self._null_neurons = []
 
-        self.rule_mat = self.__build_matrix()
+        self._rule_mat = self.__build_matrix()
 
         if(execution_mode in [1,2]):
-            self.rule_mat = self.__rule_pruning()
+            self._rule_mat = self.__rule_pruning()
 
         if(execution_mode == 1):
-            self.rule_mat = self.__rule_updation()
+            self._rule_mat = self.__rule_updation()
             
 
         #print("-----Accuracy-----")
