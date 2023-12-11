@@ -3,6 +3,7 @@ import copy
 import tensorflow as tf
 from keras.utils import np_utils
 import pandas as pd
+import pprint
 
 class FORxREN():
     """
@@ -41,6 +42,7 @@ class FORxREN():
         self._classes = None
         self._per_test = None
         self._max_fidelity_loss = None
+       
     
     def __network_output(self):
         """
@@ -184,14 +186,13 @@ class FORxREN():
         e = self._error_examples
         first_layer_size = self._first_layer_size
         input_dim = self._input_dim
-        acc_origin = self._acc_origin
+        #acc_origin = self._acc_origin
         model = self._model
 
         layer1 = model.get_layer("layer1")
         weights = layer1.get_weights()
         fidelity = 1
         min_fidelity = fidelity-self._max_fidelity_loss
-        "TODO: Cambiar por min fidelity (variable) "
         new_weights = copy.deepcopy(weights)
         next = True
         another_erased = False
@@ -284,10 +285,32 @@ class FORxREN():
         #pprint.pprint(rule_mat)
         #print("#################################")
         #print("-----First Rules-----")
-        self.__write_rules(rule_mat, True)
+        #self.__write_rules(rule_mat, True)
         return rule_mat
+    
+    def __rule_order(self,mat):
+        classes = self._classes
+        input_dim = self._input_dim
+        list_conditions_num = []
+        r_order = []
+        
+        for k in range(classes):
+            conditions_num = 0
+            for i in range(input_dim):
+                if(mat[i][k] != None):
+                    if(mat[i][k][0] != None or mat[i][k][1] != None):
+                        conditions_num = conditions_num + 1
+            list_conditions_num.append(conditions_num)
+        
+        for i in range(len(list_conditions_num)):
+            pass
+        
+                    
+                        
+        
+    
 
-    def __write_rules(self, mat, write):
+    def __write_rules(self, mat, write, attributes):
         """
         Writes the generated rules from a matrix to a rule list,
         and sorts the rules in decreasing order of complexity.
@@ -307,7 +330,7 @@ class FORxREN():
             j = 0
             rule = ""
             data = []
-            attributes = ["sepal_length","sepal_width","petal_length","petal_width"]
+            
             #For each input neuron
             for i in range(input_dim):
                 #If neuron has an interval for that class
@@ -353,8 +376,6 @@ class FORxREN():
             #Print the rule
             if(write):
                 print(rule)
-        #if(write):
-            #print("###########################################")
         self._rule_order = r_order
 
     def __rule_prune(self, rule_idx, input_idx, sub_idx):
@@ -384,8 +405,7 @@ class FORxREN():
             aux_mat[input_idx][rule_idx] = new_value
         else:
             aux_mat[input_idx][rule_idx] = None
-        self.__write_rules(aux_mat, False)
-        return self.__classify(aux_mat, self._rule_order, X_test, Y_test,False)[1]
+        return self.__classify(aux_mat, self._rule_order, X_test, Y_test)[1]
 
     def __rule_pruning(self):
         """
@@ -409,7 +429,7 @@ class FORxREN():
                 if(rule_mat[i][j] != None):
                     prune_matrix[j] += 1
 
-        r_fid = self.__classify(rule_mat, rule_order, X_test, Y_test,False)[1]
+        r_fid = self.__classify(rule_mat, rule_order, X_test, Y_test)[1]
         for j in range(len(rule_order)):
             for i in range(self._input_dim):
                 if(prune_matrix[j] > 1):
@@ -430,12 +450,9 @@ class FORxREN():
                                 rule_mat[i][rule_order[j]] = (rule_mat[i][rule_order[j]][0], None)
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
-
-        #print("-----Pruned Rules-----")
-        self.__write_rules(rule_mat, True)
         return rule_mat
 
-    def __classify(self,mat, rule_order, x_test, y_test, should_print):
+    def __classify(self,mat, rule_order, x_test, y_test):
         """
         Classifies the input data based on the given rule order and membership matrix.
 
@@ -472,9 +489,6 @@ class FORxREN():
                     else:
                         wrong_class.append(x)
                     break
-
-        #if(should_print):
-          #print(("Elements correctly classified: {}%").format(round(correct_class/ total, 4)*100))
         return (wrong_class, round(correct_class / total, 4))
 
     def __rule_updation(self):
@@ -495,7 +509,7 @@ class FORxREN():
 
         missclassified = []
 
-        data = self.__classify(rule_mat, rule_order, X_test, Y_test,False)
+        data = self.__classify(rule_mat, rule_order, X_test, Y_test)
         pruned_fidelity = data[1]
 
         for k in range(classes):
@@ -524,7 +538,7 @@ class FORxREN():
                             origin_max = max
                             aux_mat = copy.deepcopy(rule_mat)
                             aux_mat[i][k] = (aux_mat[i][k][0], max)
-                            new_data = self.__classify(aux_mat, rule_order, X_test, Y_test, False)
+                            new_data = self.__classify(aux_mat, rule_order, X_test, Y_test)
                             new_fid = new_data[1]
                             if(new_fid > pruned_fidelity):
                                 #print(("El valor {} en la posicion [{},{}] fue cambiado por {}").format(rule_mat[i][k][1], i, k, max))
@@ -534,7 +548,7 @@ class FORxREN():
                             origin_min = min
                             aux_mat = copy.deepcopy(rule_mat)
                             aux_mat[i][k] = (min, aux_mat[i][k][1])
-                            new_data = self.__classify(aux_mat, rule_order, X_test, Y_test, False)
+                            new_data = self.__classify(aux_mat, rule_order, X_test, Y_test)
                             new_fid = new_data[1]
                             if(new_fid > pruned_fidelity):
                                 #print(("El valor {} en la posicion [{},{}] fue cambiado por {}").format(rule_mat[i][k][0], i, k, min))
@@ -545,7 +559,7 @@ class FORxREN():
         #self.write_rules(rule_mat, True)
         return rule_mat
 
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss):
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes):
         """
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
@@ -564,6 +578,9 @@ class FORxREN():
             first_layer_size (int): Size of the first hidden layer of the NN
             classes (int): Amount of clasification classes in the dataset
             execution_mode (int) : COMPLETAR
+            percentage_test (): COMPLETAR
+            max_fidelity_loss (): COMPLETAR
+            attributes (): COMPLETAR
         """
 
         self._model = keras_model
@@ -586,18 +603,23 @@ class FORxREN():
             self._null_neurons = []
 
         self._rule_mat = self.__build_matrix()
-
+        "Hacerel rule order"
+ 
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
+            "Hacerel rule order"
 
         if(execution_mode == 1):
             self._rule_mat = self.__rule_updation()
+            "Hacerel rule order"
             
 
-        #print("-----Accuracy-----")
-        #self.__classify(self.rule_mat, self.rule_order, self.X, self.Y,True)[1]
-        #print("-----Fidelity-----")
-        #self.__classify(self.rule_mat, self.rule_order, self.X, self.network_y,True)[1]
-        #print("-----Final Matrix-----")
-        #pprint.pprint(self.rule_mat)
+        print("-----Accuracy-----")
+        print(self.__classify(self._rule_mat, self._rule_order, self._X, self._Y)[1])
+        print("-----Fidelity-----")
+        print(self.__classify(self._rule_mat, self._rule_order, self._X, self._network_y)[1])
+        print("-----Final Matrix-----")
+        pprint.pprint(self._rule_mat)
+        print("-----Final Rules-----")
+        self.__write_rules(self._rule_mat,True,attributes)
         
