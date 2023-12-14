@@ -280,12 +280,8 @@ class FORxREN():
                             if(X[w][i] < min):
                                 min = X[w][i]
                         rule_mat[i][j] = (min,max)
-                        
-        #print("-----Obtained Matrix-----")
-        #pprint.pprint(rule_mat)
-        #print("#################################")
-        #print("-----First Rules-----")
-        #self.__write_rules(rule_mat, True)
+
+        self._rule_order(self, rule_mat)
         return rule_mat
     
     def __rule_order(self,mat):
@@ -300,17 +296,24 @@ class FORxREN():
                 if(mat[i][k] != None):
                     if(mat[i][k][0] != None or mat[i][k][1] != None):
                         conditions_num = conditions_num + 1
-            list_conditions_num.append(conditions_num)
+            list_conditions_num.append(conditions_num,k)
         
-        for i in range(len(list_conditions_num)):
-            pass
-        
-                    
-                        
-        
-    
 
-    def __write_rules(self, mat, write, attributes):
+        for i in range(len(list_conditions_num)):
+            max_count = -1
+            max_idx = -1
+            #Find the rule with most conditions
+            for j in range(len(list_conditions_num)):
+                if(list_conditions_num[j][0] > max_count):
+                    max_count = list_conditions_num[j][0]
+                    max_idx = j
+            #Remove it from the list
+            poped_rule = list_conditions_num.pop(max_idx)
+            r_order.append(poped_rule[max_idx][1])
+            
+        self._rule_order =  r_order    
+
+    def __write_rules(self, mat, attributes):
         """
         Writes the generated rules from a matrix to a rule list,
         and sorts the rules in decreasing order of complexity.
@@ -322,7 +325,6 @@ class FORxREN():
         classes = self._classes
         input_dim = self._input_dim
         rules = []
-        r_order = []
 
         #For each class
         for k in range(classes):
@@ -353,30 +355,14 @@ class FORxREN():
             #Once the rule is done save it, we add a second version in case is the last rule and we add the amount of conditions (J)
             data.append('if({}) then Class = {}'.format(rule,k))
             data.append('else Class = {}'.format(k))
-            data.append(j)
             #We add the information in a list
             rules.append(data)
+        
         #For each rule
         for i in range(len(rules)):
-            max_count = -1
-            rule = ""
-            max_idx = -1
-            #Find the rule with most conditions
-            for j in range(len(rules)):
-                if(rules[j][2] > max_count):
-                    rule = rules[j][0]
-                    max_count = rules[j][2]
-                    max_idx = j
-            #Remove it from the list
-            poped_rule = rules.pop(max_idx)
-            r_order.append(int(poped_rule[1][-1]))
-            #If is the last one then turn it into an else
-            if(len(rules) == 0):
-                rule = poped_rule[1]
-            #Print the rule
-            if(write):
-                print(rule)
-        self._rule_order = r_order
+            print(rule)
+        
+        
 
     def __rule_prune(self, rule_idx, input_idx, sub_idx):
         """
@@ -450,6 +436,7 @@ class FORxREN():
                                 rule_mat[i][rule_order[j]] = (rule_mat[i][rule_order[j]][0], None)
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
+        self.__rule_order(self,rule_mat)
         return rule_mat
 
     def __classify(self,mat, rule_order, x_test, y_test):
@@ -555,8 +542,7 @@ class FORxREN():
                                 rule_mat[i][k] = (min, rule_mat[i][k][1])
                                 pruned_fidelity = new_fid
 
-        #print("-----Updated Rules-----")
-        #self.write_rules(rule_mat, True)
+        self._rule_order(self,rule_mat)
         return rule_mat
 
     def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes):
@@ -603,7 +589,6 @@ class FORxREN():
             self._null_neurons = []
 
         self._rule_mat = self.__build_matrix()
-        "Hacerel rule order"
  
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
@@ -621,5 +606,5 @@ class FORxREN():
         print("-----Final Matrix-----")
         pprint.pprint(self._rule_mat)
         print("-----Final Rules-----")
-        self.__write_rules(self._rule_mat,True,attributes)
+        self.__write_rules(self._rule_mat,attributes)
         
