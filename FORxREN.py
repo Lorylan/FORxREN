@@ -592,11 +592,11 @@ class FORxREN():
  
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
-            "Hacerel rule order"
+            
 
         if(execution_mode == 1):
             self._rule_mat = self.__rule_updation()
-            "Hacerel rule order"
+            
             
 
         print("-----Accuracy-----")
