@@ -11,25 +11,26 @@ from sklearn.datasets import load_wine, load_iris, load_breast_cancer
 
 def build_model(hidden_layer_sizes,input_dim, classes, X , Y, persentage_test ,loss ):
 
-    X_train = [:len(X)*1-persentage_test]
-    Y_train = []
+    end_idx=len(X)*1-persentage_test
+    
+    X_train = X[:end_idx]
+    Y_train = Y[:end_idx]
 
     model = Sequential()
 
     model.add(Dense(hidden_layer_sizes[0],input_dim=input_dim,activation='relu',name="First_layer"))
 
-    for hidden_layer_size in hidden_layer_sizes:
+    #Arranca desde la segunda, porque la primera ya la agregue
+    for hidden_layer_size in hidden_layer_sizes[1:-1]:
         model.add(Dense(hidden_layer_size, activation='relu'),name=f'Hidden_layer_{hidden_layer_sizes.index(hidden_layer_size)}')
     
-    model.add(Dense(classes,activation='softmax'), name="Output_layer" )
+    model.add(Dense(hidden_layer_sizes[-1],activation='softmax'), name="Output_layer" )
 
     model.compile(loss=loss,optimizer='adam',metrics=['accuracy'])
 
     model.fit(X_train, Y_train, batch_size=32,epochs=200,verbose=1)
     
     return model
-
-
 
 if (conf.DATASET == "iris"):
     iris= load_iris()
@@ -39,7 +40,7 @@ if (conf.DATASET == "iris"):
     LOSS_FUNCTION = ''
     X, Y = shuffle(iris.data , iris.target)
     
-    FIRST_LAYER_SIZE = 5
+    HIDDEN_LAYER_SIZES= [5,CANT_CLASES]
     
     
 elif (conf.DATASET == "wbc"):
@@ -50,9 +51,10 @@ elif (conf.DATASET == "wbc"):
     LOSS_FUNCTION = ''
     X, Y = shuffle(wbc.data , wbc.target)
     
-    FIRST_LAYER_SIZE = 10
+    HIDDEN_LAYER_SIZES = [10,CANT_CLASES]
     
 else:
+    # conf.DATASET == "wine"
     wine= load_wine()
     CANT_CLASES = len(wine.target_names)
     INPUT_DIM = len(wine.feature_names)
@@ -60,10 +62,10 @@ else:
     LOSS_FUNCTION = ''
     X, Y = shuffle(wine.data , wine.target)
     
-    FIRST_LAYER_SIZE = 10
+    HIDDEN_LAYER_SIZES = [10, CANT_CLASES]
 
 
-KERAS_MODEL = build_model(FIRST_LAYER_SIZE,INPUT_DIM,CANT_CLASES,X,Y, LOSS_FUNCTION)
+KERAS_MODEL = build_model(HIDDEN_LAYER_SIZES,INPUT_DIM,CANT_CLASES,X,Y, LOSS_FUNCTION)
 
 forxren = FORxREN().extract_rules(KERAS_MODEL, X, Y, INPUT_DIM, conf.FIRST_LAYER_SIZE, conf.EXECUTION_MODE, 
                                  conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES)
