@@ -128,7 +128,7 @@ class FORxREN():
 
         e=[]
 
-        layer1 = model.get_layer("layer1")
+        layer1 = model.get_layer("First_layer")
         weights = layer1.get_weights()
 
         #---------------------------
@@ -166,7 +166,7 @@ class FORxREN():
         """
         e = self._error_examples
 
-        min = len(self.X) + 1
+        min = len(self._X) + 1
         for i in range(len(e)):
             if i not in erased:
                 if(len(e[i]) < min):
@@ -189,7 +189,7 @@ class FORxREN():
         #acc_origin = self._acc_origin
         model = self._model
 
-        layer1 = model.get_layer("layer1")
+        layer1 = model.get_layer("First_layer")
         weights = layer1.get_weights()
         fidelity = 1
         min_fidelity = fidelity-self._max_fidelity_loss
@@ -280,8 +280,7 @@ class FORxREN():
                             if(X[w][i] < min):
                                 min = X[w][i]
                         rule_mat[i][j] = (min,max)
-
-        self._rule_order(self, rule_mat)
+        self.__rule_order(rule_mat)
         return rule_mat
     
     def __rule_order(self,mat):
@@ -296,9 +295,8 @@ class FORxREN():
                 if(mat[i][k] != None):
                     if(mat[i][k][0] != None or mat[i][k][1] != None):
                         conditions_num = conditions_num + 1
-            list_conditions_num.append(conditions_num,k)
+            list_conditions_num.append([conditions_num,k])
         
-
         for i in range(len(list_conditions_num)):
             max_count = -1
             max_idx = -1
@@ -309,7 +307,8 @@ class FORxREN():
                     max_idx = j
             #Remove it from the list
             poped_rule = list_conditions_num.pop(max_idx)
-            r_order.append(poped_rule[max_idx][1])
+          
+            r_order.append(poped_rule[1])
             
         self._rule_order =  r_order    
 
@@ -436,7 +435,7 @@ class FORxREN():
                                 rule_mat[i][rule_order[j]] = (rule_mat[i][rule_order[j]][0], None)
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
-        self.__rule_order(self,rule_mat)
+        self.__rule_order(self._rule_mat)
         return rule_mat
 
     def __classify(self,mat, rule_order, x_test, y_test):
@@ -542,10 +541,10 @@ class FORxREN():
                                 rule_mat[i][k] = (min, rule_mat[i][k][1])
                                 pruned_fidelity = new_fid
 
-        self._rule_order(self,rule_mat)
+        self.__rule_order(rule_mat)
         return rule_mat
 
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes):
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes):
         """
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
@@ -577,7 +576,7 @@ class FORxREN():
         self._mode = execution_mode
         self._per_test = percentage_test
         self._max_fidelity_loss = max_fidelity_loss
-        self._classes = pd.unique(Y)
+        self._classes = cant_classes
 
         self._acc_origin = self.__model_accuracy(False)
         self._network_y = self.__network_output()
@@ -592,13 +591,10 @@ class FORxREN():
  
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
-            
-
+        
         if(execution_mode == 1):
             self._rule_mat = self.__rule_updation()
             
-            
-
         print("-----Accuracy-----")
         print(self.__classify(self._rule_mat, self._rule_order, self._X, self._Y)[1])
         print("-----Fidelity-----")
