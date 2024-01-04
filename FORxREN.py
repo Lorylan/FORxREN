@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 import tensorflow as tf
-from keras.utils import np_utils
+from keras import utils
 import pandas as pd
 import pprint
 
@@ -108,7 +108,7 @@ class FORxREN():
         else:
             Y_test = self.__calculate_test(self._Y)
 
-        Y_test=np_utils.to_categorical(Y_test, num_classes=self._classes)
+        Y_test=utils.to_categorical(Y_test, num_classes=self._classes)
         result = self._model.evaluate(X_test,Y_test, verbose=0)
         #print(("Network test: {} - Network accuracy: {}").format(result[0],result[1]))
         return result[1]

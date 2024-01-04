@@ -4,7 +4,7 @@ import copy
 from sklearn.utils import shuffle
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.utils import np_utils
+from keras import utils
 from sklearn.datasets import load_wine, load_iris, load_breast_cancer
 
 def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,classes):
@@ -13,7 +13,7 @@ def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,class
     
     X_train = X[:end_idx]
     Y_train = Y[:end_idx]
-    y_train = np_utils.to_categorical(copy.deepcopy(Y_train),num_classes=classes)
+    y_train = utils.to_categorical(copy.deepcopy(Y_train),num_classes=classes)
 
     model = Sequential()
 
