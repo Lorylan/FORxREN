@@ -6,6 +6,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras import utils
 from sklearn.datasets import load_wine, load_iris, load_breast_cancer
+import tensorflow as tf
 
 def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,classes):
 
@@ -25,7 +26,7 @@ def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,class
         model.add(Dense(hidden_layer_size, activation='relu',name=f'Hidden_layer_{idx_layer}'))
         idx_layer+=1
     
-    model.add(Dense(hidden_layer_sizes[-1],activation='softmax', name="Output_layer" ))
+    model.add(Dense(hidden_layer_sizes[-1],activation='softmax', name="Output_layer"))
 
     model.compile(loss=loss,optimizer='adam',metrics=['accuracy'])
 
@@ -59,8 +60,17 @@ else:
     X, Y = shuffle(wine.data , wine.target)
     
 
-HIDDEN_LAYER_SIZES = [INPUT_DIM//2, INPUT_DIM*2, INPUT_DIM,CANT_CLASES]
-KERAS_MODEL = build_model(HIDDEN_LAYER_SIZES ,INPUT_DIM ,X ,Y ,conf.TEST_PERCENT,LOSS_FUNCTION, CANT_CLASES)
+if (conf.CREATE_NN):
+    HIDDEN_LAYER_SIZES = [INPUT_DIM//2, INPUT_DIM*2, INPUT_DIM,CANT_CLASES]
+    KERAS_MODEL = build_model(HIDDEN_LAYER_SIZES ,INPUT_DIM ,X ,Y ,conf.TEST_PERCENT,LOSS_FUNCTION, CANT_CLASES)
+    FIRST_LAYER_SIZE = HIDDEN_LAYER_SIZES[0]
 
+else:
+    KERAS_MODEL = tf.keras.models.load_model('Models/{}_model'.format(conf.DATASET))
+    FIRST_LAYER_SIZE = KERAS_MODEL.get_layer("First_layer").output_shape[1]
 
-forxren = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,HIDDEN_LAYER_SIZES[0] , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES)
+keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES)
+
+if (conf.SAVE_NN):
+    keras_model.save('Models/{}_model'.format(conf.DATASET))
+    

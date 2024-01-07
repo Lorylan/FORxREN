@@ -1,0 +1,38 @@
+-----Accuracy-----
+0.9104
+-----Fidelity-----
+0.9227
+-----Final Matrix-----
+array([[None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, (None, 16.35)],
+       [None, None],
+       [None, (None, 117.2)],
+       [None, None],
+       [None, None],
+       [None, None],
+       [None, (0.0, 1.252)],
+       [None, None],
+       [None, None],
+       [None, None]], dtype=object)
+-----Final Rules-----
+if(worst radius ≤ 16.35 ∧ worst perimeter ≤ 117.2 ∧ (worst concavity ≥ 0.0 ∧ worst concavity ≤ 1.252)) then Class = 1
+else Class = 0

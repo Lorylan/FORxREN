@@ -606,4 +606,6 @@ class FORxREN():
         pprint.pprint(self._rule_mat)
         print("-----Final Rules-----")
         self.__write_rules(self._rule_mat,attributes)
+
+        return self._model
         
