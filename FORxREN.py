@@ -584,7 +584,7 @@ class FORxREN():
         self._acc_origin = self.__model_accuracy(False)
         print(self._acc_origin)
         
-        if(self._acc_origin < 0.80):
+        if(self._acc_origin < 0.95):
             exit
         
         self._network_y = self.__network_output()
