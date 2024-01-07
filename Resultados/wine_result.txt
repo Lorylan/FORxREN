@@ -1,0 +1,21 @@
+-----Accuracy-----
+0.6629
+-----Fidelity-----
+0.764
+-----Final Matrix-----
+array([[None, None, None],
+       [(None, 3.98), None, None],
+       [None, None, None],
+       [None, None, None],
+       [None, None, None],
+       [None, None, None],
+       [None, None, None],
+       [None, None, None],
+       [None, None, None],
+       [(None, 1.25), None, None],
+       [None, None, None],
+       [(680.0, None), (278.0, 830.0), (415.0, 880.0)]], dtype=object)
+-----Final Rules-----
+if(malic_acid ≤ 3.98 ∧ hue ≤ 1.25 ∧ proline ≥ 680.0) then Class = 0
+if((proline ≥ 278.0 ∧ proline ≤ 830.0)) then Class = 1
+else Class = 2
