@@ -323,6 +323,7 @@ class FORxREN():
         """
         classes = self._classes
         input_dim = self._input_dim
+        order = self._rule_order
         rules = []
 
         #For each class
@@ -358,8 +359,10 @@ class FORxREN():
             rules.append(data)
         
         #For each rule
-        for i in range(len(rules)):
-            print(rule)
+        for i in range(len(order)-1):
+            print(rules[order[i]][0])
+        print(rules[order[-1]][1])
+
         
         
 
@@ -435,7 +438,7 @@ class FORxREN():
                                 rule_mat[i][rule_order[j]] = (rule_mat[i][rule_order[j]][0], None)
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
-        self.__rule_order(self._rule_mat)
+        self.__rule_order(rule_mat)
         return rule_mat
 
     def __classify(self,mat, rule_order, x_test, y_test):
