@@ -582,6 +582,11 @@ class FORxREN():
         self._classes = cant_classes
 
         self._acc_origin = self.__model_accuracy(False)
+        print(self._acc_origin)
+        
+        if(self._acc_origin < 0.80):
+            exit
+        
         self._network_y = self.__network_output()
         self._error_examples = self.__missclassified_counter()
 
