@@ -312,7 +312,7 @@ class FORxREN():
             
         self._rule_order =  r_order    
 
-    def __write_rules(self, mat, attributes):
+    def __write_rules(self, mat, attributes, class_names):
         """
         Writes the generated rules from a matrix to a rule list,
         and sorts the rules in decreasing order of complexity.
@@ -353,8 +353,8 @@ class FORxREN():
                         j = j+1
 
             #Once the rule is done save it, we add a second version in case is the last rule and we add the amount of conditions (J)
-            data.append('if({}) then Class = {}'.format(rule,k))
-            data.append('else Class = {}'.format(k))
+            data.append('if({}) then Class = {}'.format(rule,class_names[k]))
+            data.append('else Class = {}'.format(class_names[k]))
             #We add the information in a list
             rules.append(data)
         
@@ -547,7 +547,7 @@ class FORxREN():
         self.__rule_order(rule_mat)
         return rule_mat
 
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes):
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names) :
         """
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
@@ -569,6 +569,7 @@ class FORxREN():
             percentage_test (): COMPLETAR
             max_fidelity_loss (): COMPLETAR
             attributes (): COMPLETAR
+            class_names (): COMPLETAR
         """
 
         self._model = keras_model
@@ -610,7 +611,7 @@ class FORxREN():
         print("-----Final Matrix-----")
         pprint.pprint(self._rule_mat)
         print("-----Final Rules-----")
-        self.__write_rules(self._rule_mat,attributes)
+        self.__write_rules(self._rule_mat,attributes,class_names)
 
         return self._model
         

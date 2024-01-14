@@ -7,6 +7,7 @@ from keras.layers import Dense
 from keras import utils
 from sklearn.datasets import load_wine, load_iris, load_breast_cancer
 import tensorflow as tf
+from tensorflow.keras.models import load_model
 
 def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,classes):
 
@@ -37,6 +38,7 @@ def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,class
 if (conf.DATASET == "iris"):
     iris= load_iris()
     CANT_CLASES = len(iris.target_names)
+    CLASS_NAMES = iris.target_names
     INPUT_DIM = len(iris.feature_names)
     ATTRIBUTES = iris.feature_names
     LOSS_FUNCTION = 'categorical_crossentropy'
@@ -45,6 +47,7 @@ if (conf.DATASET == "iris"):
 elif (conf.DATASET == "wbc"):
     wbc = load_breast_cancer()
     CANT_CLASES = len(wbc.target_names)
+    CLASS_NAMES = wbc.target_names
     INPUT_DIM = len(wbc.feature_names)
     ATTRIBUTES = wbc.feature_names
     LOSS_FUNCTION = 'binary_crossentropy'
@@ -54,6 +57,7 @@ else:
     # conf.DATASET == "wine"
     wine= load_wine()
     CANT_CLASES = len(wine.target_names)
+    CLASS_NAMES = wine.target_names
     INPUT_DIM = len(wine.feature_names)
     ATTRIBUTES = wine.feature_names
     LOSS_FUNCTION = 'categorical_crossentropy'
@@ -66,10 +70,10 @@ if (conf.CREATE_NN):
     FIRST_LAYER_SIZE = HIDDEN_LAYER_SIZES[0]
 
 else:
-    KERAS_MODEL = tf.keras.models.load_model('{}_model'.format(conf.DATASET))
+    KERAS_MODEL = load_model('{}_model'.format(conf.DATASET))
     FIRST_LAYER_SIZE = KERAS_MODEL.get_layer("First_layer").output_shape[1]
 
-keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES)
+keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES, CLASS_NAMES)
 
 if (conf.SAVE_NN):
     keras_model.save('{}_model'.format(conf.DATASET))
