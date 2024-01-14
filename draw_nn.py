@@ -50,7 +50,7 @@ class Layer():
         angle = atan((neuron2.x - neuron1.x) / float(neuron2.y - neuron1.y))
         x_adjustment = self.neuron_radius * sin(angle)
         y_adjustment = self.neuron_radius * cos(angle)
-        line = pyplot.Line2D((neuron1.x - x_adjustment, neuron2.x + x_adjustment), (neuron1.y - y_adjustment, neuron2.y + y_adjustment))
+        line = pyplot.Line2D((neuron1.x - x_adjustment, neuron2.x + x_adjustment), (neuron1.y - y_adjustment, neuron2.y + y_adjustment), linewidth=1)
         pyplot.gca().add_line(line)
 
     def draw(self, layerType=0):
@@ -87,7 +87,7 @@ class NeuralNetwork():
             layer.draw( i )
         pyplot.axis('scaled')
         pyplot.axis('off')
-        pyplot.title( 'Arquitectura de la red neuronal', fontsize=15 )
+        pyplot.title( 'Arquitectura de la RNA para Wine', fontsize=15 )
         pyplot.show()
 
 class DrawNN():
@@ -101,5 +101,5 @@ class DrawNN():
             network.add_layer(l)
         network.draw()
     
-network = DrawNN([4,2,8,4,3])
+network = DrawNN([13,6,26,13,3])
 network.draw()
