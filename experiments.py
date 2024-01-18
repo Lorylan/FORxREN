@@ -70,7 +70,7 @@ if (conf.CREATE_NN):
     FIRST_LAYER_SIZE = HIDDEN_LAYER_SIZES[0]
 
 else:
-    KERAS_MODEL = load_model('{}_model'.format(conf.DATASET))
+    KERAS_MODEL = load_model('{}_model - 92fid'.format(conf.DATASET))
     FIRST_LAYER_SIZE = KERAS_MODEL.get_layer("First_layer").output_shape[1]
 
 keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES, CLASS_NAMES)
