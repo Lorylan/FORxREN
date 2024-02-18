@@ -42,6 +42,7 @@ class FORxREN():
         self._classes = None
         self._per_test = None
         self._max_fidelity_loss = None
+        self._show_steps = None
        
     
     def __network_output(self):
@@ -147,10 +148,11 @@ class FORxREN():
                     elems.append(i)
             e.append(elems)
         layer1.set_weights(weights)
-        #print("--------------------------------")
-        #print("Amount of missclasified elements: ")
-        #for i in range(input_dim):
-        #    print("Input nº {} has {} missclasified elements ".format(i, len(e[i])))
+        if(self._show_steps):
+            print("--------------------------------")
+            print("Amount of missclasified elements: ")
+            for i in range(input_dim):
+                print("Input nº {} has {} missclasified elements ".format(i, len(e[i])))
         return e
 
 
@@ -202,15 +204,17 @@ class FORxREN():
 
         while(next):
             threshold = self.__min_len(erased)
-            #print("-----------------------")
-            #print("Threshold: ", threshold)
+            if(self._show_steps):
+                print("-----------------------")
+                print("Threshold: ", threshold)
 
             B=[]
             another_erased = False
 
             for x in range(input_dim):
                 if(len(e[x]) <= threshold and x not in erased):
-                    #print("Add neuron {} to B".format(x))
+                    if(self._show_steps):
+                        print("Add neuron {} to B".format(x))
                     B.append(x)
                     another_erased = True
 
@@ -219,20 +223,26 @@ class FORxREN():
                 for x in range(len(B)):
                     idx_err = B[x]
                     aux[0][idx_err] = tf.convert_to_tensor([0 for each in range(first_layer_size)])
-                    #print("Deactivated Neuron: ",idx_err)
+                    if(self._show_steps):
+                        print("Deactivated Neuron: ",idx_err)
                 layer1.set_weights(aux)
 
                 # We find out the accuracy
                 #print(" Partial fidelity ")
                 fid_aux = self.__model_accuracy(True)
+                if(self._show_steps):
+                    print("New Fidelity: {}".format(fid_aux))
 
                 if((fid_aux >= min_fidelity and not(len(erased) >= input_dim - 1 ))):
                     fidelity = fid_aux
                     new_weights=copy.deepcopy(aux)
                     for x in range(len(B)):
-                        #print(("Neuron {} is insignificant").format(B[x]))
+                        if(self._show_steps):
+                            print(("Neuron {} is insignificant").format(B[x]))
                         erased.append(B[x])
                 else:
+                    if(self._show_steps):
+                        print("Deactivated Neurons are Reactivated")
                     next = False
             else:
                 next = False
@@ -266,10 +276,16 @@ class FORxREN():
                 [class_groups.append([]) for j in range(classes)]
                 #For each missclassified example without the neuron I we add it to it's class array
                 [class_groups[Y[x]].append(x) for x in e[i]]
+                if(self._show_steps):
+                    print("Elements Input {} has for: \n".format(i))
+                    for x in range(classes):
+                        print("   {} elems for Class {} \n".format(len(class_groups[x]),x))
                 #For each class
                 for j in range(classes):
                     #If neuron is significant in the error for that class,  calculate max and min, then add it to matrix.
                     if(len(class_groups[j]) > alpha * len(e[j])):
+                        if(self._show_steps):
+                            print("The Threshold for Input {} with Class {} is {} and the input is accepted".format(i,j,(alpha*len(e[j]))))
                         # Check if the data is continuous or discrete
                         
                         max = -9999999999
@@ -415,29 +431,47 @@ class FORxREN():
         for j in range(self._classes):
             for i in range(self._input_dim):
                 if(rule_mat[i][j] != None):
-                    prune_matrix[j] += 1
+                    prune_matrix[rule_order[j]] += 1
 
         r_fid = self.__classify(rule_mat, rule_order, X_test, Y_test)[1]
+        if(self._show_steps):
+            print("Fidelity before pruning: {}".format(r_fid))
         for j in range(len(rule_order)):
             for i in range(self._input_dim):
-                if(prune_matrix[j] > 1):
+                print("Analizando elemento [{},{}]".format(i,rule_order[j]))
+                if(prune_matrix[rule_order[j]] > 1):
+                    print("Se puede borrar, hay {} condiciones".format(prune_matrix[j]))
                     if(rule_mat[i][rule_order[j]] != None):
                         new_fid = self.__rule_prune(rule_order[j], i, -1)
+                        if(self._show_steps):
+                            print("Prune try in position [{},{}], element ({},{})".format(i,rule_order[j],rule_mat[i][rule_order[j]][0],rule_mat[i][rule_order[j]][1]))
                         if  new_fid >= r_fid:
+                            if(self._show_steps):
+                                print("New fidelity: {}, deleting element".format(new_fid))
                             rule_mat[i][rule_order[j]] = None
                             r_fid = new_fid
                             prune_matrix[j] -= 1
                         else:
                             new_fid = self.__rule_prune(rule_order[j], i, 0)
+                            if(self._show_steps):
+                                print("Left prune try, new fidelity {}".format(new_fid))
                             if new_fid >= r_fid:
                                 rule_mat[i][rule_order[j]] = (None, rule_mat[i][rule_order[j]][1])
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
+                                if(self._show_steps):
+                                    print("Better fidelity, deleting left element")
                             new_fid = self.__rule_prune(rule_order[j], i, 1)
+                            if(self._show_steps):
+                                print("Right prune try, new fidelity {}".format(new_fid))
                             if new_fid >= r_fid:
                                 rule_mat[i][rule_order[j]] = (rule_mat[i][rule_order[j]][0], None)
                                 r_fid = new_fid
                                 prune_matrix[j] -= 0.5
+                                if(self._show_steps):
+                                    print("Better fidelity, deleting right element")
+                else:
+                    print("No se puede borrar, hay {} condiciones".format(prune_matrix[j]))
         self.__rule_order(rule_mat)
         return rule_mat
 
@@ -529,25 +563,39 @@ class FORxREN():
                             aux_mat[i][k] = (aux_mat[i][k][0], max)
                             new_data = self.__classify(aux_mat, rule_order, X_test, Y_test)
                             new_fid = new_data[1]
+                            if(self._show_steps):
+                                    print(("The value {} in position [{},{}] is going to be changed for {}").format(rule_mat[i][k][1], i, k, max))
+                                    print("New fidelity after this updation: {}".format(new_fid)) 
                             if(new_fid > pruned_fidelity):
-                                #print(("El valor {} en la posicion [{},{}] fue cambiado por {}").format(rule_mat[i][k][1], i, k, max))
+                                if(self._show_steps):
+                                    print("Updation accepted")
                                 rule_mat[i][k] = (rule_mat[i][k][0], max)
                                 pruned_fidelity = new_fid
+                            else:
+                                if(self._show_steps):
+                                    print("Updation cancelled")
                         if(min != 99999999):
                             origin_min = min
                             aux_mat = copy.deepcopy(rule_mat)
                             aux_mat[i][k] = (min, aux_mat[i][k][1])
                             new_data = self.__classify(aux_mat, rule_order, X_test, Y_test)
                             new_fid = new_data[1]
+                            if(self._show_steps):
+                                    print(("The valye {} in position [{},{}] is going to be changed for {}").format(rule_mat[i][k][0], i, k, min))
+                                    print("New fidelity after this updation: {}".format(new_fid))   
                             if(new_fid > pruned_fidelity):
-                                #print(("El valor {} en la posicion [{},{}] fue cambiado por {}").format(rule_mat[i][k][0], i, k, min))
+                                if(self._show_steps):
+                                    print("Updation accepted")                             
                                 rule_mat[i][k] = (min, rule_mat[i][k][1])
                                 pruned_fidelity = new_fid
+                            else:
+                                if(self._show_steps):
+                                    print("Updation cancelled")
 
         self.__rule_order(rule_mat)
         return rule_mat
 
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names) :
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names, show_steps) :
         """
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
@@ -565,11 +613,12 @@ class FORxREN():
             input_dim (int): Size of the input layer of the NN
             first_layer_size (int): Size of the first hidden layer of the NN
             classes (int): Amount of clasification classes in the dataset
-            execution_mode (int) : COMPLETAR
-            percentage_test (): COMPLETAR
-            max_fidelity_loss (): COMPLETAR
-            attributes (): COMPLETAR
-            class_names (): COMPLETAR
+            execution_mode (int) : If it is 1 will run the entire algorithm, with 2 will stop before updation, and with 3 will only make the initial rules.
+            percentage_test (int): Percentage of elements used for testing.
+            max_fidelity_loss (int): Is the maximum fidelity allowed to be lost while shutting down neurons.
+            attributes (string array): Contains the names of the attributes for each neuron input.
+            class_names (string array): Contains the names of the classification classes.
+            show_steps (bool): Determines if the algorithm will show the important steps in the console or not
         """
 
         self._model = keras_model
@@ -581,6 +630,7 @@ class FORxREN():
         self._per_test = percentage_test
         self._max_fidelity_loss = max_fidelity_loss
         self._classes = cant_classes
+        self._show_steps = show_steps
 
         self._acc_origin = self.__model_accuracy(False)
         print(self._acc_origin)
@@ -597,9 +647,25 @@ class FORxREN():
             self._null_neurons = []
 
         self._rule_mat = self.__build_matrix()
+        if(self._show_steps):
+            print("---------------------------------------------")
+            print("Initial Matrix")
+            pprint.pprint(self._rule_mat)
+            print("\n")
+            print("Initial Rules")
+            self.__write_rules(self._rule_mat,attributes,class_names)
+            print("---------------------------------------------")
  
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
+            if(self._show_steps):
+                print("---------------------------------------------")
+                print("Matrix after pruning")
+                pprint.pprint(self._rule_mat)
+                print("\n")
+                print("Rules after pruning")
+                self.__write_rules(self._rule_mat,attributes,class_names)
+                print("---------------------------------------------")
         
         if(execution_mode == 1):
             self._rule_mat = self.__rule_updation()
