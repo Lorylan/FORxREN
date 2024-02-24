@@ -438,9 +438,9 @@ class FORxREN():
             print("Fidelity before pruning: {}".format(r_fid))
         for j in range(len(rule_order)):
             for i in range(self._input_dim):
-                print("Analizando elemento [{},{}]".format(i,rule_order[j]))
+                print("Analyzing element [{},{}]".format(i,rule_order[j]))
                 if(prune_matrix[rule_order[j]] > 1):
-                    print("Se puede borrar, hay {} condiciones".format(prune_matrix[j]))
+                    print("Can be erased, {} condition/s present".format(prune_matrix[j]))
                     if(rule_mat[i][rule_order[j]] != None):
                         new_fid = self.__rule_prune(rule_order[j], i, -1)
                         if(self._show_steps):
@@ -471,7 +471,7 @@ class FORxREN():
                                 if(self._show_steps):
                                     print("Better fidelity, deleting right element")
                 else:
-                    print("No se puede borrar, hay {} condiciones".format(prune_matrix[j]))
+                    print("Cannot be erased, {} condition/s present".format(prune_matrix[j]))
         self.__rule_order(rule_mat)
         return rule_mat
 
