@@ -10,9 +10,7 @@ class FORxREN():
     """
     Class for rule extraction
 
-    This class implements an algorithm that extracts rules from a dataset.
-    
-    TODO: Esta bien escrito?
+    This class implements an algorithm that extracts rules from a neuronal network trained with a dataset
     
     """
 
@@ -20,8 +18,6 @@ class FORxREN():
         
         """
         Initializes a new instance of the FORxREN class.
-
-        TODO: Esta bien escrito?
 
         """
         self._X = None
@@ -95,9 +91,6 @@ class FORxREN():
 
         Y_test=utils.to_categorical(Y_test, num_classes=self._classes)
         result = self._model.evaluate(X_test,Y_test, verbose=0)
-        
-        # TODO : Dejamos este comentario o eliminamos?
-        #print(("Network test: {} - Network accuracy: {}").format(result[0],result[1]))
         
         return result[1]
 
@@ -191,9 +184,6 @@ class FORxREN():
         another_erased = False
         erased = []
 
-        #TODO: lo dejamos o se va?
-        #print("Network Accuracy: ", acc_origin)
-
         while(next):
             threshold = self.__min_len(erased)
             if(self._show_steps):
@@ -220,9 +210,6 @@ class FORxREN():
                 layer1.set_weights(aux)
 
                 # We find out the accuracy
-                
-                #TODO: va o no?
-                #print(" Partial fidelity ")
                 
                 fid_aux = self.__model_accuracy(True)
                 if(self._show_steps):
@@ -299,7 +286,7 @@ class FORxREN():
     def __rule_order(self,mat):
         
         """
-        TODO: Contruye una lista con las clases ordenadas por cantidad de terminos.
+        Build a list with the classes sorted by number of terms from highest to lowest.
 
         Args:
             mat: The matrix containing the rules.
@@ -337,13 +324,12 @@ class FORxREN():
     def __write_rules(self, mat, attributes, class_names):
         
         """
-        TODO: Fijarse si esta bien, porque saque una parte
-        Writes the generated rules from a matrix to a rule list.
+        Writes a rule list from the generated matrix.
 
         Args:
             mat : The matrix containing the rules.
-            attributes : lista con los nombres de los atributos del dataset
-            class_names : lista con los nombres de las clases
+            attributes : list with the dataset attributes.
+            class_names : list with the class names.
 
         """
         classes = self._classes
@@ -399,8 +385,7 @@ class FORxREN():
             sub_idx (int): Index of the sub-rule to be pruned. Default is -1, indicating that the entire rule is to be pruned.
 
         Returns:
-            TODO: fijarse si esta bien escrito
-            A float to the accuracy of the classification result after pruning the specified rule from the rule matrix.
+            A float with the accuracy of the classification result after pruning the specified rule from the rule matrix.
         """
         
         rule_mat = self._rule_mat
@@ -426,7 +411,7 @@ class FORxREN():
         performance before and after the removal.
 
         Returns:
-            TODO: Matriz actializada luego de la poda
+            Updated matrix after the prune.
            
         """
         rule_mat = self._rule_mat
@@ -607,14 +592,13 @@ class FORxREN():
     def __comprensibility(self, rule_mat, order, comprensibility_term_weight, comprensibility_attribute_weight):
         
         """
-        TODO: Calcula la comprensibilidad de una cada regla y en general
+        Calculates the comprehensibility of the ruleset
 
         Args:
             rule_mat (list of list): Membership matrix.
             rule_order (list): Order of the rules to be applied.
-            TODO: Pasar a ingles los de abajo
-            comprensibility_term_weight (list): Importancia de los terminos en la comprensibilidad
-            comprensibility_attributo_weight (list): Importancia de los atributos en la comprensibilidad
+            comprensibility_terms_weight (list): The importance of terms for the comprehensibility calculation
+            comprensibility_attributes_weight (list): The importance of attributes for the comprehensibility calculation
 
         
         """
@@ -637,7 +621,7 @@ class FORxREN():
                         t = t+1    
             comp = 0     
             if(k != len(order)-1 ):
-                comp = (comprensibility_term_weight * (1 / t)) + (comprensibility_attribute_weight * (1 / a))      
+                comp = (comprensibility_terms_weight * (1 / t)) + (comprensibility_attributes_weight * (1 / a))      
             else:
                 comp = 1
             rules_comp.append(comp)
@@ -650,32 +634,28 @@ class FORxREN():
     def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names, show_steps, comprensibility_terms_weight, comprensibility_attributes_weight) :
         
         """
-        TODO: Revisar la explicacion porque no hace lo de k-fold ni cross-validation
-        Trains and evaluates a model using a rule-based approach for classification.
-        This method processes the input data, builds a model, and then performs k-fold cross-validation.
-        During each fold, it computes the accuracy, fidelity, and a rule matrix for the model.
-        At the end of the k-fold cross-validation, it selects the best rule matrix based on fidelity,
-        writes the rules for the selected matrix, and prints the average accuracy and fidelity across all folds.
-        
+        Extracts rules from the model looking for a high fidelity and comprehensibility.
+        Deactivates neurons to find the most useful ones, builds a matrix that represents the rules 
+        and then prunes it to minimize it while keeping its fidelity as high as possible. 
+        The last step is to update the values in the matrix to make the rules more clear.
         
         Args:
-            TODO: Pasar a ingles
-            keras_model (): modelo de la red neuronal entreda para extraerle las reglas
-            X (list): Dataset sin la clase correspondiente (osea el y)
-            Y (list): Lista que en el idx del datos contiene la clase correspondiente
+
+            keras_model (): trained neural network model
+            X (list): Dataset input data without the class of each element.
+            Y (list): Dataset classes of each element.
             
-            input_dim (int): Size of the input layer of the NN
-            first_layer_size (int): Size of the first hidden layer of the NN
-            cant_classes (int): Amount of clasification classes in the dataset
+            input_dim (int): Size of the input layer of the NN.
+            first_layer_size (int): Size of the first hidden layer of the NN.
+            cant_classes (int): Amount of clasification classes in the dataset.
             execution_mode (int) : If it is 1 will run the entire algorithm, with 2 will stop before updation, and with 3 will only make the initial rules.
             percentage_test (int): Percentage of elements used for testing.
             max_fidelity_loss (int): Is the maximum fidelity allowed to be lost while shutting down neurons.
             attributes (string array): Contains the names of the attributes for each neuron input.
             class_names (string array): Contains the names of the classification classes.
             show_steps (bool): Determines if the algorithm will show the important steps in the console or not
-            TODO: Pasar a ingles
-            comprensibility_terms_weight (list):  Importancia de los terminos en la comprensibilidad
-            comprensibility_attributes_weight (list): Importancia de los atributos en la comprensibilidad
+            comprensibility_terms_weight (list): The importance of terms for the comprehensibility calculation
+            comprensibility_attributes_weight (list): The importance of attributes for the comprehensibility calculation
         """
 
         self._model = keras_model
