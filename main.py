@@ -18,11 +18,10 @@ def build_model(hidden_layer_sizes ,input_dim ,X ,Y ,persentage_test ,loss,class
     y_train = utils.to_categorical(copy.deepcopy(Y_train),num_classes=classes)
 
     model = Sequential()
-
     model.add(Dense(hidden_layer_sizes[0],input_dim=input_dim,activation='relu',name="First_layer"))
 
-    #Arranca desde la segunda, porque la primera ya la agregue
     idx_layer = 1
+    
     for hidden_layer_size in hidden_layer_sizes[1:-1]:
         model.add(Dense(hidden_layer_size, activation='relu',name=f'Hidden_layer_{idx_layer}'))
         idx_layer+=1
@@ -55,6 +54,7 @@ elif (conf.DATASET == "wbc"):
        
 else:
     # conf.DATASET == "wine"
+    
     wine= load_wine()
     CANT_CLASES = len(wine.target_names)
     CLASS_NAMES = wine.target_names
@@ -70,10 +70,10 @@ if (conf.CREATE_NN):
     FIRST_LAYER_SIZE = HIDDEN_LAYER_SIZES[0]
 
 else:
-    KERAS_MODEL = load_model('{}_model'.format(conf.DATASET))
+    KERAS_MODEL = load_model( '{}_model'.format(conf.DATASET))
     FIRST_LAYER_SIZE = KERAS_MODEL.get_layer("First_layer").output_shape[1]
 
-keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES, CLASS_NAMES, conf.SHOW_STEPS)
+keras_model = FORxREN().extract_rules(KERAS_MODEL ,X ,Y ,INPUT_DIM ,FIRST_LAYER_SIZE , conf.EXECUTION_MODE, conf.TEST_PERCENT, conf.MAX_FIDELITY_LOSS, ATTRIBUTES, CANT_CLASES, CLASS_NAMES, conf.SHOW_STEPS, conf.COMPRENSIBILITY_TERMS_WEIGHT,conf.COMPRENSIBILITY_ATTRIBUTES_WEIGHT)
 
 if (conf.SAVE_NN):
     keras_model.save('{}_model'.format(conf.DATASET))

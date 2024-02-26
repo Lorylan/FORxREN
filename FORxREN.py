@@ -6,26 +6,22 @@ import pandas as pd
 import pprint
 
 class FORxREN():
+    
     """
-    Abstract class for rule extraction
+    Class for rule extraction
 
-    This class defines the interface for extracting rules from a dataset, but does not provide a concrete implementation.
-    Subclasses of this class must implement the build_model and process_data method.
-
+    This class implements an algorithm that extracts rules from a dataset.
+    
+    TODO: Esta bien escrito?
+    
     """
 
     def __init__(self):
+        
         """
-        Contructs all the necesary attibutes for the Rule Extractor object
+        Initializes a new instance of the FORxREN class.
 
-        Args:
-            classes (int): Amount of clasification classes in the dataset
-            input_dim (int): Size of the input layer of the NN
-            first_layer_size (int): Size of the first hidden layer of the NN
-            per_train (int): Percentage of data used for training of the NN
-            per_test (int): Percentage of data used for testing of the NN
-            path_data (str): Directory where the dataset file is located
-            mode (int) : COMPLETAR
+        TODO: Esta bien escrito?
 
         """
         self._X = None
@@ -50,41 +46,27 @@ class FORxREN():
         Classificates every element in the dataset and returns a list with the output class from the network for each element in the dataset.
 
         Returns:
-            new_y : List of integers from the network output, where each number represents the class assigned to an element from the dataset
+            List of integers from the network output, where each number represents the class assigned to an element from the dataset
         """
+        
         data = self._X
         x_pred = self._model.predict(data, verbose=0)
 
         return [np.argmax(x_pred[elem]) for elem in range(len(data))]
 
-    """def __calculate_train(self, data):
-        
-        TODO: Ver que hacer con los porcentajes de entrenamiento
-        Splits the input data into training and validation sets based on the percentage of data to use for training.
-
-        Args:
-            data: A list or array of the data to be split.
-
-        Returns:
-            train_data: A list or array of the training data.
-        
-        per_train = self.per_train
-
-        end_idx = int(len(data)*per_train)
-        train_data =  data[:end_idx]
-        return train_data"""
 
     def __calculate_test(self, data):
+        
         """
-        TODO: Ver que hacer con los porcentajes de entrenamiento
         Splits the input data into training and validation sets based on the percentage of data to use for testing.
 
         Args:
             data: A list or array of the data to be split.
 
         Returns:
-            test_data: A list or array of the testing data.
+            A list or array of the testing data.
         """
+        
         per_test = self._per_test
 
         start_idx = int(len(data) - len(data)*per_test)
@@ -93,6 +75,7 @@ class FORxREN():
         return test_data
 
     def __model_accuracy(self, use_y_from_network):
+        
         """
         Calculates the accuracy of the model on the test data.
 
@@ -100,8 +83,9 @@ class FORxREN():
             use_y_from_network: A boolean indicating whether to use the output from the network for Y_test.
 
         Returns:
-            test_accuracy: A float indicating the accuracy of the model on the test data.
+            A float indicating the accuracy of the model on the test data.
         """
+        
         X_test = self.__calculate_test(self._X)
 
         if use_y_from_network:
@@ -111,16 +95,21 @@ class FORxREN():
 
         Y_test=utils.to_categorical(Y_test, num_classes=self._classes)
         result = self._model.evaluate(X_test,Y_test, verbose=0)
+        
+        # TODO : Dejamos este comentario o eliminamos?
         #print(("Network test: {} - Network accuracy: {}").format(result[0],result[1]))
+        
         return result[1]
 
     def __missclassified_counter(self):
+        
         """
         Removes each neuron in the first layer of the model and calculates the number of misclassified elements for each input.
 
         Returns:
-            e: A list of lists of integers. Each sublist contains the indices of the misclassified elements for a particular input.
+            A list of lists of integers. Each sublist contains the indices of the misclassified elements for a particular input.
         """
+        
         model= self._model
         input_dim = self._input_dim
         first_layer_size =self._first_layer_size
@@ -132,7 +121,7 @@ class FORxREN():
         layer1 = model.get_layer("First_layer")
         weights = layer1.get_weights()
 
-        #---------------------------
+        
         for i in range(input_dim):
             elems = []
             no_neuron_i = copy.deepcopy(weights)
@@ -157,6 +146,7 @@ class FORxREN():
 
 
     def __min_len(self,erased):
+        
         """
         Returns the minimum number of misclassified elements for the inputs not in the 'erased' list.
 
@@ -164,8 +154,9 @@ class FORxREN():
             erased: A list of integers representing the indices of inputs that have been erased.
 
         Returns:
-            min: An integer representing the minimum number of misclassified elements for the inputs not in the 'erased' list.
+            An integer representing the minimum number of misclassified elements for the inputs not in the 'erased' list.
         """
+        
         e = self._error_examples
 
         min = len(self._X) + 1
@@ -180,11 +171,11 @@ class FORxREN():
         Filters out the neurons in the first layer of the neural network whose activation is not necessary for the
         network's high accuracy / fidelity. The function uses a threshold to determine the number of missclassified examples that
         a neuron is responsible for, and if this number is lower than the threshold, the neuron is removed.
-        The function returns a list with the indices of the removed neurons.
 
         Returns:
-            erased (list): A list with the indices of the removed neurons
+            A list with the indices of the removed neurons
         """
+        
         e = self._error_examples
         first_layer_size = self._first_layer_size
         input_dim = self._input_dim
@@ -200,6 +191,7 @@ class FORxREN():
         another_erased = False
         erased = []
 
+        #TODO: lo dejamos o se va?
         #print("Network Accuracy: ", acc_origin)
 
         while(next):
@@ -228,7 +220,10 @@ class FORxREN():
                 layer1.set_weights(aux)
 
                 # We find out the accuracy
+                
+                #TODO: va o no?
                 #print(" Partial fidelity ")
+                
                 fid_aux = self.__model_accuracy(True)
                 if(self._show_steps):
                     print("New Fidelity: {}".format(fid_aux))
@@ -252,12 +247,14 @@ class FORxREN():
 
 
     def __build_matrix(self):
+        
         """
-         Build a matrix of rules based on the input data and the misclassified examples.
+        Build a matrix of rules based on the input data and the misclassified examples.
 
         Returns:
-            rule_mat : A matrix of rules with dimensions (input_dim, classes).
+            A matrix of rules with dimensions (input_dim, classes).
         """
+        
         input_dim = self._input_dim
         classes = self._classes
         B = self._null_neurons
@@ -300,6 +297,15 @@ class FORxREN():
         return rule_mat
     
     def __rule_order(self,mat):
+        
+        """
+        TODO: Contruye una lista con las clases ordenadas por cantidad de terminos.
+
+        Args:
+            mat: The matrix containing the rules.
+            
+        """
+        
         classes = self._classes
         input_dim = self._input_dim
         list_conditions_num = []
@@ -329,13 +335,16 @@ class FORxREN():
         self._rule_order =  r_order    
 
     def __write_rules(self, mat, attributes, class_names):
+        
         """
-        Writes the generated rules from a matrix to a rule list,
-        and sorts the rules in decreasing order of complexity.
+        TODO: Fijarse si esta bien, porque saque una parte
+        Writes the generated rules from a matrix to a rule list.
 
         Args:
-            mat (numpy.ndarray): The matrix containing the rules.
-            write (boolean ): A boolean value that indicates whether the rules should be printed to the console or not.
+            mat : The matrix containing the rules.
+            attributes : lista con los nombres de los atributos del dataset
+            class_names : lista con los nombres de las clases
+
         """
         classes = self._classes
         input_dim = self._input_dim
@@ -379,13 +388,10 @@ class FORxREN():
             print(rules[order[i]][0])
         print(rules[order[-1]][1])
 
-        
-        
 
     def __rule_prune(self, rule_idx, input_idx, sub_idx):
         """
         Prunes a rule from the rule matrix and returns the accuracy of the classification result.
-
 
         Args:
             rule_idx (int): Index of the rule to be pruned.
@@ -393,8 +399,10 @@ class FORxREN():
             sub_idx (int): Index of the sub-rule to be pruned. Default is -1, indicating that the entire rule is to be pruned.
 
         Returns:
-            float: The accuracy of the classification result after pruning the specified rule from the rule matrix.
+            TODO: fijarse si esta bien escrito
+            A float to the accuracy of the classification result after pruning the specified rule from the rule matrix.
         """
+        
         rule_mat = self._rule_mat
         Y_test = self._network_y
         X_test = self._X
@@ -418,7 +426,8 @@ class FORxREN():
         performance before and after the removal.
 
         Returns:
-            rule_mat : The updated rule matrix after pruning.
+            TODO: Matriz actializada luego de la poda
+           
         """
         rule_mat = self._rule_mat
         rule_order = self._rule_order
@@ -486,7 +495,7 @@ class FORxREN():
             y_test (list): arget output corresponding to the input data.
 
         Returns:
-            tuple: A tuple containing the indices of the misclassified samples and the classification accuracy.
+            A tuple containing the indices of the misclassified samples and the classification accuracy.
         """
 
         input_dim = self._input_dim
@@ -520,7 +529,7 @@ class FORxREN():
         lower and upper boundaries to improve the classification fidelity.
 
         Returns:
-             tuple: The updated rule matrix.
+            The updated rule matrix.
         """
 
         classes = self._classes
@@ -594,31 +603,79 @@ class FORxREN():
 
         self.__rule_order(rule_mat)
         return rule_mat
-
-    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names, show_steps) :
+    
+    def __comprensibility(self, rule_mat, order, comprensibility_term_weight, comprensibility_attribute_weight):
+        
         """
+        TODO: Calcula la comprensibilidad de una cada regla y en general
+
+        Args:
+            rule_mat (list of list): Membership matrix.
+            rule_order (list): Order of the rules to be applied.
+            TODO: Pasar a ingles los de abajo
+            comprensibility_term_weight (list): Importancia de los terminos en la comprensibilidad
+            comprensibility_attributo_weight (list): Importancia de los atributos en la comprensibilidad
+
+        
+        """
+        
+        classes = self._classes
+        input_dim = self._input_dim
+        
+        rules_comp = []
+        
+        for k in order:
+            t = 0 
+            a = 0
+           
+            for i in range(input_dim):
+                if( rule_mat[i][k] != None):
+                    a = a+1
+                    if( rule_mat[i][k][0] != None):
+                        t = t+1 
+                    if (rule_mat[i][k][1] != None):
+                        t = t+1    
+            comp = 0     
+            if(k != len(order)-1 ):
+                comp = (comprensibility_term_weight * (1 / t)) + (comprensibility_attribute_weight * (1 / a))      
+            else:
+                comp = 1
+            rules_comp.append(comp)
+            print("Comprensibility for rule {}: {}".format(k, comp))
+        
+        result = sum(rules_comp)/classes
+        print("Comprensibility of the ruleset: {}".format(result))
+        
+
+    def extract_rules(self, keras_model, X,Y, input_dim, first_layer_size, execution_mode, percentage_test, max_fidelity_loss,attributes, cant_classes, class_names, show_steps, comprensibility_terms_weight, comprensibility_attributes_weight) :
+        
+        """
+        TODO: Revisar la explicacion porque no hace lo de k-fold ni cross-validation
         Trains and evaluates a model using a rule-based approach for classification.
         This method processes the input data, builds a model, and then performs k-fold cross-validation.
         During each fold, it computes the accuracy, fidelity, and a rule matrix for the model.
         At the end of the k-fold cross-validation, it selects the best rule matrix based on fidelity,
         writes the rules for the selected matrix, and prints the average accuracy and fidelity across all folds.
         
-        #TODO: Revisar la explicación 
         
         Args:
-
-            keras_model (): 
-            X ():
-            Y ():
+            TODO: Pasar a ingles
+            keras_model (): modelo de la red neuronal entreda para extraerle las reglas
+            X (list): Dataset sin la clase correspondiente (osea el y)
+            Y (list): Lista que en el idx del datos contiene la clase correspondiente
+            
             input_dim (int): Size of the input layer of the NN
             first_layer_size (int): Size of the first hidden layer of the NN
-            classes (int): Amount of clasification classes in the dataset
+            cant_classes (int): Amount of clasification classes in the dataset
             execution_mode (int) : If it is 1 will run the entire algorithm, with 2 will stop before updation, and with 3 will only make the initial rules.
             percentage_test (int): Percentage of elements used for testing.
             max_fidelity_loss (int): Is the maximum fidelity allowed to be lost while shutting down neurons.
             attributes (string array): Contains the names of the attributes for each neuron input.
             class_names (string array): Contains the names of the classification classes.
             show_steps (bool): Determines if the algorithm will show the important steps in the console or not
+            TODO: Pasar a ingles
+            comprensibility_terms_weight (list):  Importancia de los terminos en la comprensibilidad
+            comprensibility_attributes_weight (list): Importancia de los atributos en la comprensibilidad
         """
 
         self._model = keras_model
@@ -655,6 +712,9 @@ class FORxREN():
             print("Initial Rules")
             self.__write_rules(self._rule_mat,attributes,class_names)
             print("---------------------------------------------")
+            print("-----Comprensibility-----")
+            self.__comprensibility(self._rule_mat , self._rule_order, comprensibility_terms_weight,comprensibility_attributes_weight)
+            print("---------------------------------------------")
  
         if(execution_mode in [1,2]):
             self._rule_mat = self.__rule_pruning()
@@ -666,14 +726,20 @@ class FORxREN():
                 print("Rules after pruning")
                 self.__write_rules(self._rule_mat,attributes,class_names)
                 print("---------------------------------------------")
+                print("-----Comprensibility-----")
+                self.__comprensibility(self._rule_mat,self._rule_order,comprensibility_terms_weight,comprensibility_attributes_weight)
+                print("---------------------------------------------")
         
         if(execution_mode == 1):
             self._rule_mat = self.__rule_updation()
+            
             
         print("-----Accuracy-----")
         print(self.__classify(self._rule_mat, self._rule_order, self._X, self._Y)[1])
         print("-----Fidelity-----")
         print(self.__classify(self._rule_mat, self._rule_order, self._X, self._network_y)[1])
+        print("-----Comprensibility-----")
+        self.__comprensibility(self._rule_mat, self._rule_order,comprensibility_terms_weight,comprensibility_attributes_weight)
         print("-----Final Matrix-----")
         pprint.pprint(self._rule_mat)
         print("-----Final Rules-----")
