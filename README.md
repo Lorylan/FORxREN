@@ -61,7 +61,7 @@ Los resultados de las ejecuciones han demostrado que FORxREN genera reglas con u
 > ```pip install -r requirements.txt```
 
 ```
-python .\FORxREN\experiments.py
+python .\FORxREN\main.py
 ```
 
 
