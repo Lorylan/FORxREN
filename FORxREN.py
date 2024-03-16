@@ -589,7 +589,7 @@ class FORxREN():
         self.__rule_order(rule_mat)
         return rule_mat
     
-    def __comprensibility(self, rule_mat, order, comprensibility_term_weight, comprensibility_attribute_weight):
+    def __comprensibility(self, rule_mat, order, comprensibility_terms_weight, comprensibility_attributes_weight):
         
         """
         Calculates the comprehensibility of the ruleset
