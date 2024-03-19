@@ -299,11 +299,13 @@ class FORxREN():
         r_order = []
         
         for k in range(classes):
-            conditions_num = 0
+            conditions_num = 0.0
             for i in range(input_dim):
                 if(mat[i][k] != None):
-                    if(mat[i][k][0] != None or mat[i][k][1] != None):
-                        conditions_num = conditions_num + 1
+                    if(mat[i][k][0] != None):
+                        conditions_num = conditions_num + 0.5
+                    if(mat[i][k][1] != None):
+                        conditions_num = conditions_num + 0.5
             list_conditions_num.append([conditions_num,k])
         
         for i in range(len(list_conditions_num)):
@@ -589,7 +591,7 @@ class FORxREN():
         self.__rule_order(rule_mat)
         return rule_mat
     
-    def __comprensibility(self, rule_mat, order, comprensibility_term_weight, comprensibility_attribute_weight):
+    def __comprensibility(self, rule_mat, order, comprensibility_terms_weight, comprensibility_attributes_weight):
         
         """
         Calculates the comprehensibility of the ruleset

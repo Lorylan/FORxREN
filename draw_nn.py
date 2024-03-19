@@ -15,7 +15,7 @@ class Neuron():
 class Layer():
     def __init__(self, network, number_of_neurons, number_of_neurons_in_widest_layer):
         self.vertical_distance_between_layers = 6
-        self.horizontal_distance_between_neurons = 2
+        self.horizontal_distance_between_neurons = 1.5
         self.neuron_radius = 0.5
         self.number_of_neurons_in_widest_layer = number_of_neurons_in_widest_layer
         self.previous_layer = self.__get_previous_layer(network)
@@ -50,7 +50,7 @@ class Layer():
         angle = atan((neuron2.x - neuron1.x) / float(neuron2.y - neuron1.y))
         x_adjustment = self.neuron_radius * sin(angle)
         y_adjustment = self.neuron_radius * cos(angle)
-        line = pyplot.Line2D((neuron1.x - x_adjustment, neuron2.x + x_adjustment), (neuron1.y - y_adjustment, neuron2.y + y_adjustment), linewidth=1)
+        line = pyplot.Line2D((neuron1.x - x_adjustment, neuron2.x + x_adjustment), (neuron1.y - y_adjustment, neuron2.y + y_adjustment), linewidth=0.35)
         pyplot.gca().add_line(line)
 
     def draw(self, layerType=0):
