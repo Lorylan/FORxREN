@@ -15,23 +15,21 @@ Este repositorio contiene la tesina de licenciatura en informática, titulada "I
 - Gabriela Pérez
 
 ## Resumen
-Las redes neuronales artificiales tienen la capacidad de alcanzar altos niveles de precisión en tareas de clasificación, pero la imposibilidad de comprender y validar el proceso de decisión de un sistema de IA es un claro inconveniente. 
-En esta tesina se diseñó y desarrollo un algoritmo de extracción de reglas llamada FORxREN. Se orienta hacia la extracción de reglas fieles y fácilmente interpretables que arrojen luz sobre el razonamiento subyacente de la red neuronal con la que fue entrenada. Este enfoque permitió analizar, comprender su utilidad y realizar modificaciones dirigidas a mejorar la explicabilidad de las redes neuronales.
+Las redes neuronales artificiales se destacan en tareas complejas, pero la imposibilidad de comprender y validar el proceso de decisión de un sistema de IA es un claro inconveniente. En el caso de las tareas de clasificación, la extracción de reglas se presenta como una herramienta para mejorar la comprensión de la red y sus resultados.
+En esta tesina se estudiaron diferentes técnicas de extracción de reglas para explicar las redes neuronales artificiales. Se diseñó y desarrolló un algoritmo de extracción de reglas llamado FORxREN el cual genera reglas fieles y fácilmente interpretables que pueden esclarecer en parte el razonamiento de las redes neuronales.
 
 ## Trabajo Realizado
 Se analizaron distintas técnicas de extracción de reglas, incluyendo [ECLAIRE](https://arxiv.org/abs/2111.12628), [FERNN](https://link.springer.com/article/10.1023/A:1008307919726) y [DeepRED](https://link.springer.com/chapter/10.1007/978-3-319-46307-0_29), cada una con un enfoque particular. Posteriormente, mediante ingeniería inversa del método de [RxREN](https://link.springer.com/article/10.1007/s11063-011-9207-8) y ajustando su enfoque original para dar prioridad a la fidelidad de las reglas sobre la precisión, se desarrolló el algoritmo [FORxREN](https://publicaciones.sadio.org.ar/index.php/JAIIO/article/view/551). Este algoritmo fue evaluado utilizando los conjuntos de datos Iris, WBC y Wine, mediante la construcción de múltiples redes neuronales artificiales.
 
 ## Conclusiones 
-Los resultados de las ejecuciones han demostrado que FORxREN genera reglas con un alto porcentaje de fidelidad. Además, se ha observado que, fue posible aumentar la generalidad de las reglas (y, por lo tanto, su comprensibilidad) sin perder la fidelidad.
-Ha quedado demostrado que dicha orientacion a la fidelidad por parte de FORxREN puede ser una estrategia efectiva para mejorar la explicabilidad de la red y generar reglas más fiables en determinadas aplicaciones. Además de que la explicabilidad en redes
-neuronales artificiales es de suma importancia en la actualidad.
+Los resultados de las ejecuciones han demostrado que FORxREN genera reglas con un alto porcentaje de fidelidad. Además, se ha observado que, fue posible aumentar la generalidad de las reglas (y, por lo tanto, su comprensibilidad) sin perder la fidelidad. Ha quedado demostrado que dicha orientación a la fidelidad por parte de FORxREN puede ser una estrategia efectiva para mejorar la explicabilidad de la red y generar reglas más fiables en determinadas aplicaciones. Además de que la explicabilidad en redes neuronales artificiales es de suma importancia en la actualidad.
 
 ## Trabajos Futuros
-- Investigar el método propuesto en redes neuronales complejas y de mayor escala para evaluar 
-su escalabilidad y rendimiento.
-- Realizar estudios empíricos para evaluar su eficacia en diferentes dominios y tareas, incluyendo la clasificación de datos no numéricos.
-- Examinar el impacto de diferentes arquitecturas de red en la explicabilidad, y se investigará su potencial en ombinación con otras técnicas de explicabilidad.
-- Evaluar la comprensibilidad de manera formal.
+- Investigar la aplicación de FORxREN en redes neuronales mas complejas y de mayor escala para evaluar su escalabilidad y rendimiento.
+- Realizar estudios empíricos para evaluar la eficiencia de FORxREN en diferentes dominios y tareas, como datos no numéricos.
+- Analizar el impacto de diferentes arquitecturas de red en la explicabilidad de las reglas.
+- Investigar el potencial del método propuesto en combinación con otras técnicas de explicabilidad.
+- Evaluar la comprensibilidad de manera formal con un enfoque mas social y centrado en el humano
 
 ## Estructura del Repositorio
 
@@ -63,7 +61,7 @@ su escalabilidad y rendimiento.
 > ```pip install -r requirements.txt```
 
 ```
-python .\FORxREN\experiments.py
+python .\FORxREN\main.py
 ```
 
 
